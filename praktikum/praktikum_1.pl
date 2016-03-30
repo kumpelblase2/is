@@ -31,32 +31,37 @@ verheiratet(dennis, vanessa).
 verheiratet(paul, maria).
 verheiratet(robert, claudia).
 
-kind(thorsten, robert).
-kind(lea, paul).
-kind(jonas, dennis).
-kind(julia, bernd).
-kind(georg, thorsten).
-kind(linda, jonas).
-kind(andrea, thorsten).
-kind(hannes, thorsten).
-kind(jana, markus).
-kind(sarah, jonas).
-kind(jeff, georg).
-kind(tina, georg).
-kind(lukas, georg).
-kind(A, B) :- verheiratet(C, B), kind(A, C).
+kind(thorsten, robert, claudia).
+kind(lea, paul, maria).
+kind(jonas, dennis, vanessa).
+kind(julia, bernd, tanja).
+kind(georg, thorsten, lea).
+kind(linda, jonas, julia).
+kind(andrea, thorsten, lea).
+kind(hannes, thorsten, lea).
+kind(jana, markus, andrea).
+kind(sarah, jonas, julia).
+kind(jeff, georg, linda).
+kind(tina, georg, linda).
+kind(lukas, georg, linda).
 
-tochter(A, B) :- weiblich(A), kind(A, B).
-sohn(A, B) :- maenlich(A), kind(A, B).
+tochter(A, B, C) :- weiblich(A), kind(A, B, C).
+sohn(A, B, C) :- maenlich(A), kind(A, B, C).
 
-geschwister(A, B) :- kind(A, C), kind(B, C).
-bruder(A, B) :- maenlich(A), geschwisteR(A, B).
+geschwister(A, B) :- kind(A, C, D), kind(B, C, D), A \= B.
+bruder(A, B) :- maenlich(A), geschwister(A, B).
 schwester(A, B) :- weiblich(A), geschwister(A, B).
 
-eltern(A, B) :- kind(B, A); (verheiratet(A, C), kind(C, A)).
+eltern(A, B) :- kind(B, A, _) ; kind(B, _, A).
 vater(A, B) :- maenlich(A), eltern(A, B).
 mutter(A, B) :- weiblich(A), eltern(A, B).
 
-großeltern(A, B) :- eltern(A, C), eltern(C, B).
-oma(A, B) :- weiblich(A), großeltern(A, B).
-opa(A, B) :- maenlich(A), großeltern(A, B).
+grosseltern(A, B) :- eltern(A, C), eltern(C, B).
+oma(A, B) :- weiblich(A), grosseltern(A, B).
+opa(A, B) :- maenlich(A), grosseltern(A, B).
+
+onkel(B, A) :- kind(A, C, D), (bruder(B, C); bruder(B, D)).
+tante(B, A) :- kind(A, C, D), (schwester(B, C); schwester(B, D)).
+pate(B, A) :- kind(A, C, D), (geschwister(B, C); geschwister(B, D)).
+
+cousin(B, A) :- pate(C, A), (kind(B, C, _); kind(B, _, C)), B \= A.
