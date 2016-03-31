@@ -84,6 +84,11 @@ tante(B, A) :- kind(A, C, D), (schwester(B, C); schwester(B, D)).
 % B ist der Pate. (von A)
 pate(B, A) :- kind(A, C, D), (geschwister(B, C); geschwister(B, D)).
 
+% A ist der Neffe von B
+neffe(A, B) :- maennlich(A), pate(B, A).
+% A ist die Nichte von B
+nichte(A, B) :- weiblich(A), pate(B, A).
+
 % B ist der cousin von A
 cousin(B, A) :- pate(C, A), (kind(B, C, _); kind(B, _, C)), B \= A.
 
