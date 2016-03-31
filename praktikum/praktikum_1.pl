@@ -94,3 +94,5 @@ halbgeschwister(A, B) :- kind(A, C, D), kind(B, E, D), A \= B, C \= E.
 halbbruder(A, B) :- maennlich(A), halbgeschwister(A, B).
 % A ist die HalbSchwester von B
 halbschwester(A, B) :- weiblich(A), halbgeschwister(A, B).
+
+enkelkind(A, B) :- grosseltern(B, A). 
