@@ -10,6 +10,7 @@ maenlich(dennis).
 maenlich(paul).
 maenlich(robert).
 maenlich(lukas).
+maenlich(michael).
 
 weiblich(linda).
 weiblich(tina).
@@ -22,8 +23,11 @@ weiblich(tanja).
 weiblich(vanessa).
 weiblich(maria).
 weiblich(claudia).
+weiblich(mia).
+weiblich(corinna).
 
 verheiratet(georg, linda).
+verheiratet(georg, mia).
 verheiratet(markus, andrea).
 verheiratet(thorsten, lea).
 verheiratet(jonas, julia).
@@ -46,6 +50,8 @@ kind(sarah, jonas, julia).
 kind(jeff, georg, linda).
 kind(tina, georg, linda).
 kind(lukas, georg, linda).
+kind(michael, georg, mia).
+kind(corinna, georg, mia).
 
 % A ist die Tochter von B(Vater) und C(Mutter)
 tochter(A, B, C) :- weiblich(A), kind(A, B, C).
@@ -78,4 +84,13 @@ tante(B, A) :- kind(A, C, D), (schwester(B, C); schwester(B, D)).
 % B ist der Pate. (von A)
 pate(B, A) :- kind(A, C, D), (geschwister(B, C); geschwister(B, D)).
 
+% B ist der cousin von A
 cousin(B, A) :- pate(C, A), (kind(B, C, _); kind(B, _, C)), B \= A.
+
+% A ist das Halbgeschwister von B
+halbgeschwister(A, B) :- kind(A, C, D), kind(B, C, E), A \= B, D \= E.
+halbgeschwister(A, B) :- kind(A, C, D), kind(B, E, D), A \= B, C \= E.
+% A ist der HalbBruder von B
+halbbruder(A, B) :- maennlich(A), halbgeschwister(A, B).
+% A ist die HalbSchwester von B
+halbschwester(A, B) :- weiblich(A), halbgeschwister(A, B).
