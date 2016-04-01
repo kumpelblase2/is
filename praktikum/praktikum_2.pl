@@ -32,7 +32,7 @@ lex(mann, n).
 lex(von, pr).
 lex(mit, pr).
 
-lex(X, en) :- maenlich(X).
+lex(X, en) :- maennlich(X).
 lex(X, en) :- weiblich(X).
 
 

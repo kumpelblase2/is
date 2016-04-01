@@ -1,16 +1,16 @@
 #!/usr/bin/swipl
-maenlich(georg).
-maenlich(jeff).
-maenlich(hannes).
-maenlich(markus).
-maenlich(thorsten).
-maenlich(jonas).
-maenlich(bernd).
-maenlich(dennis).
-maenlich(paul).
-maenlich(robert).
-maenlich(lukas).
-maenlich(michael).
+maennlich(georg).
+maennlich(jeff).
+maennlich(hannes).
+maennlich(markus).
+maennlich(thorsten).
+maennlich(jonas).
+maennlich(bernd).
+maennlich(dennis).
+maennlich(paul).
+maennlich(robert).
+maennlich(lukas).
+maennlich(michael).
 
 weiblich(linda).
 weiblich(tina).
@@ -56,18 +56,18 @@ kind(corinna, georg, mia).
 % A ist die Tochter von B(Vater) und C(Mutter)
 tochter(A, B, C) :- weiblich(A), kind(A, B, C).
 % A ist der Sohn von B(Vater) und C(Mutter)
-sohn(A, B, C) :- maenlich(A), kind(A, B, C).
+sohn(A, B, C) :- maennlich(A), kind(A, B, C).
 
 
 geschwister(A, B) :- kind(A, C, D), kind(B, C, D), A \= B.
 % A ist der Bruder von B
-bruder(A, B) :- maenlich(A), geschwister(A, B).
+bruder(A, B) :- maennlich(A), geschwister(A, B).
 % A ist die Schwester von B
 schwester(A, B) :- weiblich(A), geschwister(A, B).
 
 eltern(A, B) :- kind(B, A, _) ; kind(B, _, A).
 % A ist der Vater von B
-vater(A, B) :- maenlich(A), eltern(A, B).
+vater(A, B) :- maennlich(A), eltern(A, B).
 % A ist die Mutter von B
 mutter(A, B) :- weiblich(A), eltern(A, B).
 
@@ -75,7 +75,7 @@ grosseltern(A, B) :- eltern(A, C), eltern(C, B).
 % A ist die Oma von B
 oma(A, B) :- weiblich(A), grosseltern(A, B).
 % A ist der Opa von B
-opa(A, B) :- maenlich(A), grosseltern(A, B).
+opa(A, B) :- maennlich(A), grosseltern(A, B).
 
 % B ist der Onkel von A
 onkel(B, A) :- kind(A, C, D), (bruder(B, C); bruder(B, D)).
