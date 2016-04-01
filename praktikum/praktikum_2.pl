@@ -17,17 +17,9 @@ lex(der, a).
 lex(die, a).
 lex(das, a).
 
-lex(onkel, n).
-lex(tante, n).
-lex(tochter, n).
-lex(sohn, n).
-lex(vater, n).
-lex(mutter, n).
-lex(geschwister, n).
-lex(oma, n).
-lex(opa, n).
-lex(frau, n).
-lex(mann, n).
+% Ueberprueft ob es eine 2-Stellige Funktion gibt, die wie X heisst (bruder, mutter, onkel, ...)
+% Das Cut("!") ist wichtig, damit es keine doppel-Ausgaben gibt.
+lex(X, n) :- Y =.. [X, _A, _B], Y, !.
 
 lex(von, pr).
 lex(mit, pr).
@@ -35,19 +27,27 @@ lex(mit, pr).
 lex(X, en) :- maennlich(X).
 lex(X, en) :- weiblich(X).
 
-
-s --> ip, vp.
+% wer ist der onkel von jeff
+s(F) --> ip, vp(B), pp(P), { F =.. [B, X, P] }.
+% von wem ist corinna die schwester
+% von = präposition
+% wem = Interrogativpronomen
+% ist = verb
+% corinna = eignename
+% die = artikel
+% schwester = nomen
+s(F) --> p, ip, vp(P), np(B), { F =.. [B, P, X] }.
 ip --> [X], { lex(X, ip) }.
 v --> [X], { lex(X, v) }.
-vp --> v.
-vp --> v,np.
-np --> en.
-np --> a,n.
-np --> a,n,pp.
-en --> [X], { lex(X, en) }.
-n --> [X], { lex(X, n) }.
+vp(_) --> v.
+vp(X) --> v,np(X).
+np(X) --> en(X).
+np(X) --> a,n(X).
+np(X) --> a,n(X),pp(_).
+en(X) --> [X], { lex(X, en) }.
+n(X) --> [X], { lex(X, n) }.
 a --> [X], { lex(X, a) }.
-pp --> p, np.
+pp(X) --> p, np(X).
 p --> [X], { lex(X, pr) }.
 
 

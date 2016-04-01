@@ -42,10 +42,10 @@ kind(lea, paul, maria).
 kind(jonas, dennis, vanessa).
 kind(julia, bernd, tanja).
 kind(georg, thorsten, lea).
-kind(linda, jonas, julia).
 kind(andrea, thorsten, lea).
 kind(hannes, thorsten, lea).
 kind(jana, markus, andrea).
+kind(linda, jonas, julia).
 kind(sarah, jonas, julia).
 kind(jeff, georg, linda).
 kind(tina, georg, linda).
