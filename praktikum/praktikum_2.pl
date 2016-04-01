@@ -32,7 +32,8 @@ lex(mann, n).
 lex(von, pr).
 lex(mit, pr).
 
-lex(X, en) :- maenlich(X); weiblich(X).
+lex(X, en) :- maenlich(X).
+lex(X, en) :- weiblich(X).
 
 
 s --> ip, vp.
