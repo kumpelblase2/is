@@ -36,36 +36,51 @@ verheiratet(dennis, vanessa).
 verheiratet(paul, maria).
 verheiratet(robert, claudia).
 
-% Thorsten ist das Kind von Robert und Claudia.
-kind(thorsten, robert, claudia).
-kind(lea, paul, maria).
-kind(jonas, dennis, vanessa).
-kind(julia, bernd, tanja).
-kind(georg, thorsten, lea).
-kind(andrea, thorsten, lea).
-kind(hannes, thorsten, lea).
-kind(jana, markus, andrea).
-kind(linda, jonas, julia).
-kind(sarah, jonas, julia).
-kind(jeff, georg, linda).
-kind(tina, georg, linda).
-kind(lukas, georg, linda).
-kind(michael, georg, mia).
-kind(corinna, georg, mia).
+% Thorsten ist das Kind von Robert
+kind(thorsten, robert).
+kind(thorsten, cluadia).
+kind(lea, paul).
+kind(lea, maria).
+kind(jonas, dennis).
+kind(jonas, vanessa).
+kind(julia, bernd).
+kind(julia, tanja).
+kind(georg, thorsten).
+kind(georg, lea).
+kind(andrea, thorsten).
+kind(andrea, lea).
+kind(hannes, thorsten).
+kind(hannes, lea).
+kind(jana, markus).
+kind(jana, andrea).
+kind(linda, jonas).
+kind(linda, julia).
+kind(sarah, jonas).
+kind(sarah, julia).
+kind(jeff, georg).
+kind(jeff, linda).
+kind(tina, georg).
+kind(tina, linda).
+kind(lukas, georg).
+kind(lukas, linda).
+kind(michael, georg).
+kind(michael, mia).
+kind(corinna, georg).
+kind(corinna, mia).
 
-% A ist die Tochter von B(Vater) und C(Mutter)
-tochter(A, B, C) :- weiblich(A), kind(A, B, C).
-% A ist der Sohn von B(Vater) und C(Mutter)
-sohn(A, B, C) :- maennlich(A), kind(A, B, C).
+% A ist die Tochter von B
+tochter(A, B) :- weiblich(A), kind(A, B).
+% A ist der Sohn von B
+sohn(A, B) :- maennlich(A), kind(A, B).
 
 
-geschwister(A, B) :- kind(A, C, D), kind(B, C, D), A \= B.
+geschwister(A, B) :- kind(A, C), kind(B, C), kind(A, D), kind(B, D), verheiratet(C, D), A \= B.
 % A ist der Bruder von B
 bruder(A, B) :- maennlich(A), geschwister(A, B).
 % A ist die Schwester von B
 schwester(A, B) :- weiblich(A), geschwister(A, B).
 
-eltern(A, B) :- kind(B, A, _) ; kind(B, _, A).
+eltern(A, B) :- kind(B, A).
 % A ist der Vater von B
 vater(A, B) :- maennlich(A), eltern(A, B).
 % A ist die Mutter von B
@@ -78,11 +93,11 @@ oma(A, B) :- weiblich(A), grosseltern(A, B).
 opa(A, B) :- maennlich(A), grosseltern(A, B).
 
 % B ist der Onkel von A
-onkel(B, A) :- kind(A, C, D), (bruder(B, C); bruder(B, D)).
+onkel(B, A) :- kind(A, C), bruder(B, C).
 % B ist die Tante von A.
-tante(B, A) :- kind(A, C, D), (schwester(B, C); schwester(B, D)).
+tante(B, A) :- kind(A, C), schwester(B, C).
 % B ist der Pate. (von A)
-pate(B, A) :- kind(A, C, D), (geschwister(B, C); geschwister(B, D)).
+pate(B, A) :- kind(A, C), geschwister(B, C).
 
 % A ist der Neffe von B
 neffe(A, B) :- maennlich(A), pate(B, A).
@@ -90,11 +105,10 @@ neffe(A, B) :- maennlich(A), pate(B, A).
 nichte(A, B) :- weiblich(A), pate(B, A).
 
 % B ist der cousin von A
-cousin(B, A) :- pate(C, A), (kind(B, C, _); kind(B, _, C)), B \= A.
+cousin(B, A) :- pate(C, A), kind(B, C), B \= A.
 
 % A ist das Halbgeschwister von B
-halbgeschwister(A, B) :- kind(A, C, D), kind(B, C, E), A \= B, D \= E.
-halbgeschwister(A, B) :- kind(A, C, D), kind(B, E, D), A \= B, C \= E.
+halbgeschwister(A, B) :- kind(A, C), kind(B, C), not(geschwister(A, B)).
 % A ist der HalbBruder von B
 halbbruder(A, B) :- maennlich(A), halbgeschwister(A, B).
 % A ist die HalbSchwester von B
