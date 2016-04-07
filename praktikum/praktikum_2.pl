@@ -28,7 +28,7 @@ lex(X, en) :- maennlich(X).
 lex(X, en) :- weiblich(X).
 
 % wer ist der onkel von jeff
-s(X) --> ip, vp(B), pp(P), { F =.. [B, X, P], current_predicate(B, _), F }.
+s(F) --> ip, vp(B), pp(P), { F =.. [B, X, P] }.
 % von wem ist corinna die schwester
 % von = präposition
 % wem = Interrogativpronomen
@@ -36,7 +36,7 @@ s(X) --> ip, vp(B), pp(P), { F =.. [B, X, P], current_predicate(B, _), F }.
 % corinna = eignename
 % die = artikel
 % schwester = nomen
-s(X) --> p, ip, vp(P), np(B), { F =.. [B, P, X], current_predicate(B,_), F }.
+s(F) --> p, ip, vp(P), np(B), { F =.. [B, P, X] }.
 ip --> [X], { lex(X, ip) }.
 v --> [X], { lex(X, v) }.
 vp(X) --> v,np(X).
@@ -49,3 +49,4 @@ n(X) --> [X], { lex(X, n) }.
 a --> [X], { lex(X, a) }.
 pp(X) --> p, np(X).
 p --> [X], { lex(X, pr) }.
+
