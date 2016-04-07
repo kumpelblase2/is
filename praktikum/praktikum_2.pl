@@ -1,5 +1,6 @@
 #!/usr/bin/swipl
 :- consult('praktikum_1.pl').
+:- consult('readsentence.pl').
 
 lex(wer, ip).
 lex(was, ip).
@@ -27,8 +28,10 @@ lex(mit, pr).
 lex(X, en) :- maennlich(X).
 lex(X, en) :- weiblich(X).
 
+s :- read_sentence(S), s(X, S, []), X.
+
 % wer ist der onkel von jeff
-s(F) --> ip, vp(B), pp(P), { F =.. [B, X, P] }.
+s(F) --> ip, vp(B), pp(P), [?], { F =.. [B, X, P] }.
 % von wem ist corinna die schwester
 % von = präposition
 % wem = Interrogativpronomen
@@ -36,7 +39,9 @@ s(F) --> ip, vp(B), pp(P), { F =.. [B, X, P] }.
 % corinna = eignename
 % die = artikel
 % schwester = nomen
-s(F) --> p, ip, vp(P), np(B), { F =.. [B, P, X] }.
+s(F) --> p, ip, vp(P), np(B), [?], { F =.. [B, P, X] }.
+% ist hannes der onkel von jeff
+s(F) --> vp(P1), np(B), pp(P2), [?], {F =.. [B, P1, P2]}.
 ip --> [X], { lex(X, ip) }.
 v --> [X], { lex(X, v) }.
 vp(X) --> v,np(X).
