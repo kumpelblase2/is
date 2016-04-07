@@ -108,7 +108,7 @@ nichte(A, B) :- weiblich(A), pate(B, A).
 cousin(B, A) :- pate(C, A), kind(B, C), B \= A.
 
 % A ist das Halbgeschwister von B
-halbgeschwister(A, B) :- kind(A, C), kind(B, C), not(geschwister(A, B)).
+halbgeschwister(A, B) :- kind(A, C), kind(B, C), not(geschwister(A, B)), A \= B.
 % A ist der HalbBruder von B
 halbbruder(A, B) :- maennlich(A), halbgeschwister(A, B).
 % A ist die HalbSchwester von B
