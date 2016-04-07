@@ -28,7 +28,7 @@ lex(mit, pr).
 lex(X, en) :- maennlich(X).
 lex(X, en) :- weiblich(X).
 
-s :- read_sentence(S), s(X, S, []), X.
+s(X) :- read_sentence(S), s(X, S, []), X.
 
 % wer ist der onkel von jeff
 s(F) --> ip, vp(B), pp(P), [?], { F =.. [B, X, P] }.
