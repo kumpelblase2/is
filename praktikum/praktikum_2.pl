@@ -21,13 +21,22 @@ lex(die, a, f).
 lex(das, a, n).
 
 % Ueberprueft ob es eine 2-Stellige Funktion gibt, die wie X heisst (bruder, mutter, onkel, ...)
-% Das Cut("!") ist wichtig, damit es keine doppel-Ausgaben gibt.
+% Das Cut('!') ist wichtig, damit es keine doppel-Ausgaben gibt.
 %lex(X, n) :- Y =.. [X, _A, _B], Y, !.
 lex(bruder, n, m).
 lex(schwester, n, f).
 lex(opa, n, m).
 lex(oma, n, f).
-lex(eletern, n, f).
+lex(vater, n, m).
+lex(mutter, n, f).
+lex(halbbruder, n, m).
+lex(halbschwester, n, f).
+lex(onkel, n, m).
+lex(tante, n f).
+lex(tochter, n, f).
+lex(sohn, n, m).
+lex(neffe, n, m).
+lex(nichte, n, f).
 
 lex(von, pr).
 lex(mit, pr).
@@ -36,17 +45,18 @@ lex(X, en, m) :- maennlich(X).
 lex(X, en, f) :- weiblich(X).
 
 s :-
-	%read_sentence(S),
-	S = [wer, ist, der, bruder, von, corinna, ?],
-	(s(X, S, []); write("du sprechen deutsch?")), !,
+	read_sentence(S),
+	(s(X, S, []); write('du sprechen deutsch?')), !,
 	answer(X).
 
 answer(X) :-
 	X =.. F,
 	[BEZIEHUNG, P1, P2] = F, !,
+	lex(BEZIEHUNG, n, Gender),
+	lex(Artikel, a, Gender),
 	(
-		(X,	write("der "), write(BEZIEHUNG), write(" von "), write(P2), write(" ist "), write(P1), write("."), nl);
-		(write("--keine weiteren antworten--"), nl)
+		(X,	write(Artikel), write(' '), write(BEZIEHUNG), write(' von '), write(P2), write(' ist '), write(P1), write('.'), nl);
+		(write('--keine weiteren antworten--'), nl)
 	), fail.
 
 % wer ist der onkel von jeff
