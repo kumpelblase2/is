@@ -35,7 +35,19 @@ lex(mit, pr).
 lex(X, en, m) :- maennlich(X).
 lex(X, en, f) :- weiblich(X).
 
-s(X) :- read_sentence(S), s(X, S, []), X.
+s :-
+	%read_sentence(S),
+	S = [wer, ist, der, bruder, von, corinna, ?],
+	(s(X, S, []); write("du sprechen deutsch?")), !,
+	answer(X).
+
+answer(X) :-
+	X =.. F,
+	[BEZIEHUNG, P1, P2] = F, !,
+	(
+		(X,	write("der "), write(BEZIEHUNG), write(" von "), write(P2), write(" ist "), write(P1), write("."), nl);
+		(write("--keine weiteren antworten--"), nl)
+	), fail.
 
 % wer ist der onkel von jeff
 s(F) --> ip(G1), vp(B, G1), pp(P, G2), [?], { F =.. [B, X, P] }.
