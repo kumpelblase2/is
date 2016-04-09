@@ -14,8 +14,8 @@ lex(sind, v, pl).
 lex(wer, ip, m, no).
 lex(wer, ip, f, no).
 lex(was, ip, n, _).
-lex(wen, ip, m, ak).
-lex(wen, ip, f, ak).
+%lex(wen, ip, m, ak).
+%lex(wen, ip, f, ak).
 lex(wem, ip, m, da).
 lex(wem, ip, f, da).
 
@@ -44,8 +44,8 @@ lex(die, a, _, pl, _).
 lex(das, a, n, sg, no).
 
 s :-
-	read_sentence(S),
-	%S = [wer, sind, die, eltern, von, michael, ?],
+	%read_sentence(S),
+	S = [wer, ist, die, schwester, von, michael, ?],
 	(
 		(s(X, S, []), !, answer(X));
 		write('du sprechen deutsch?')
@@ -54,23 +54,30 @@ s :-
 answer(X) :-
 	X =.. F,
 	[BEZIEHUNG, P1, P2] = F,
-	lex(BEZIEHUNG, n, Gender, Numerus),
-	lex(Artikel, a, Gender, Numerus),
-	lex(Verb, v, Numerus),
-	findall(P1, X, Y),
+	(lex(BEZIEHUNG, n, Gender, Numerus); !, write('die beziehung '), write(BEZIEHUNG), write(' wurde nicht gefunden.'), fail),
+	(lex(Artikel, a, Gender, Numerus); !, write('der artikel '), write(Artikel), write(' wurde nicht gefunden.'), fail),
+	(lex(Verb, v, Numerus); !, write('das verb '), write(Verb), write(' wurde nicht gefunden.'), fail),
+	((
+		findall(P1, X, Y),
 	
-	write(Artikel), write(' '),
-	write(BEZIEHUNG), write(' von '),
-	write(P2), write(' '),
-	write(Verb), write(' '),
-	write_list(Y),
-	write('.'), nl.
+		write(Artikel), write(' '),
+		write(BEZIEHUNG), write(' von '),
+		write(P2), write(' '),
+		write(Verb), write(' '),
+		write_list(Y),
+		write('.'), nl
+	); (
+		write('meine datenbank weiss nichts ueber die beziehung '),
+		write(BEZIEHUNG), write(' zwischen '),
+		write(P1), write(' und '),
+		write(P2), write('.'), nl
+	)).
 
 write_list([Name]) :- write(Name).
 write_list([Name|Rest]) :- Rest \= [], write(Name), write(' und '), write_list(Rest).
 
 % wer ist der onkel von jeff
-s(F) --> ip(G1), vp(B, G1, _N1, K), pp(P, _G2, _N2, K), [?], { F =.. [B, _X, P] }.
+s(F) --> ip(G1, K), vp(B, G1, _N1, K), pp(P, _G2, _N2, K), [?], { F =.. [B, _X, P] }.
 % von wem ist corinna die schwester
 % von = präposition
 % wem = Interrogativpronomen
@@ -78,13 +85,13 @@ s(F) --> ip(G1), vp(B, G1, _N1, K), pp(P, _G2, _N2, K), [?], { F =.. [B, _X, P] 
 % corinna = eignename
 % die = artikel
 % schwester = nomen
-s(F) --> p, ip(G), vp(P, G, N, K), np(B, _, N, K), [?], { F =.. [B, P, _X] }.
+s(F) --> p, ip(G, da), vp(P, G, N, da), np(B, _, N, _), [?], { F =.. [B, P, _X] }.
 % ist hannes der onkel von jeff
-s(F) --> vp(P1, G, N, K), np(B, G, N, K), pp(P2, _, _, K), [?], {F =.. [B, P1, P2]}.
-ip(G) --> [X], { lex(X, ip, G) }.
+s(F) --> v(N), np(P1, G, N, K), np(B, G, N, K), pp(P2, _, _, K), [?], {F =.. [B, P1, P2]}.
+ip(G, K) --> [X], { lex(X, ip, G, K) }.
 v(N) --> [X], { lex(X, v, N) }.
 vp(X, G, N, K) --> v(N), np(X, G, N, K).
-vp(_, _, N, _) --> v(N).
+%vp(_, _, N, _) --> v(N).
 np(X, G, sg, _) --> en(X, G).
 np(X, G, N, K) --> a(G, N, K),n(X, G, N).
 %np(X, G, N, K) --> a(G, N, K),n(X, G, N),pp(_, _, N, K).
