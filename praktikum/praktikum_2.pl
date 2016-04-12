@@ -44,8 +44,8 @@ lex(die, a, _, pl, _).
 lex(das, a, n, sg, no).
 
 s :-
-	%read_sentence(S),
-	S = [wer, ist, die, schwester, von, michael, ?],
+	read_sentence(S),
+	%S = [ist, corinna, der, bruder, von, michael, ?],
 	(
 		(s(X, S, []), !, answer(X));
 		write('du sprechen deutsch?')
@@ -55,11 +55,11 @@ answer(X) :-
 	X =.. F,
 	[BEZIEHUNG, P1, P2] = F,
 	(lex(BEZIEHUNG, n, Gender, Numerus); !, write('die beziehung '), write(BEZIEHUNG), write(' wurde nicht gefunden.'), fail),
-	(lex(Artikel, a, Gender, Numerus); !, write('der artikel '), write(Artikel), write(' wurde nicht gefunden.'), fail),
+	(lex(Artikel, a, Gender, Numerus, no); !, write('der artikel '), write(Artikel), write(' wurde nicht gefunden.'), fail),
 	(lex(Verb, v, Numerus); !, write('das verb '), write(Verb), write(' wurde nicht gefunden.'), fail),
 	((
 		findall(P1, X, Y),
-	
+		Y \= [],
 		write(Artikel), write(' '),
 		write(BEZIEHUNG), write(' von '),
 		write(P2), write(' '),
@@ -87,7 +87,7 @@ s(F) --> ip(G1, K), vp(B, G1, _N1, K), pp(P, _G2, _N2, K), [?], { F =.. [B, _X, 
 % schwester = nomen
 s(F) --> p, ip(G, da), vp(P, G, N, da), np(B, _, N, _), [?], { F =.. [B, P, _X] }.
 % ist hannes der onkel von jeff
-s(F) --> v(N), np(P1, G, N, K), np(B, G, N, K), pp(P2, _, _, K), [?], {F =.. [B, P1, P2]}.
+s(F) --> v(N), np(P1, G, N, K), np(B, G2, N, K), pp(P2, _, _, K), [?], {F =.. [B, P1, P2]}.
 ip(G, K) --> [X], { lex(X, ip, G, K) }.
 v(N) --> [X], { lex(X, v, N) }.
 vp(X, G, N, K) --> v(N), np(X, G, N, K).
