@@ -102,7 +102,7 @@ write_list([Name]) :- write(Name).
 write_list([Name|Rest]) :- Rest \= [], write(Name), write(' und '), write_list(Rest).
 
 % wer ist der onkel von jeff
-s(F) --> ip(Gender1, Kausus), vp(Relation, Gender1, _, Kausus), pp(Person, _, _, Kausus), [?],
+s(F) --> ip(Gender1, no), vp(Relation, Gender1, _, no), pp(Person, _, _, no), [?],
          { F =.. [Relation, _, Person] }.
 % von wem ist corinna die schwester
 % von = praeposition
@@ -119,7 +119,7 @@ s(F) --> v(Numerus), np(Person1, _, Numerus, Kausus), np(Relation, _, Numerus, K
 ip(Gender, Kausus) --> [X], { lex(X, ip, Gender, Kausus) }.
 v(Numerus) --> [X], { lex(X, v, Numerus) }.
 vp(X, Gender, Numerus, Kausus) --> v(Numerus), np(X, Gender, Numerus, Kausus).
-vp(_, _, Numerus, _) --> v(Numerus).
+%vp(_, _, Numerus, _) --> v(Numerus).
 np(X, Gender, sg, _) --> en(X, Gender).
 np(X, Gender, Numerus, Kausus) --> a(Gender, Numerus, Kausus), n(X, Gender, Numerus).
 %np(X, Gender, Numerus, Kausus) --> a(Gender, Numerus, Kausus),n(X, Gender, Numerus),pp(_, _, Numerus, Kausus).
@@ -130,4 +130,4 @@ pp(X, Gender, Numerus, Kausus) --> p, np(X, Gender, Numerus, Kausus).
 p --> [X], { lex(X, pr) }.
 
 
-:- s, halt.
+%:- s, halt.
