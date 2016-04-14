@@ -62,6 +62,7 @@ s :-
 		(s(X, S, []), !, answer(X));
 		write('du sprechen deutsch?')
 	).
+f(BEZIEHUNG, Person1, Person2, Frage) :- X =.. [BEZIEHUNG, Person1, Person2], s(X, Frage, []).
 
 answer(X) :-
 	X =.. F,
