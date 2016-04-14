@@ -26,7 +26,7 @@ lex(schwestern, schwester, n, f, pl).
 lex(opa, opa, n, m, sg).
 lex(opas, opa, n, m, pl).
 lex(oma, oma, n, f, sg).
-lex(oma, omas, n, f, pl).
+lex(omas, oma, n, f, pl).
 lex(vater, vater, n, m, sg).
 lex(vaeter, vater, n, m, pl).
 lex(mutter, mutter, n, f, sg).
@@ -103,7 +103,7 @@ write_list([Name]) :- write(Name).
 write_list([Name|Rest]) :- Rest \= [], write(Name), write(' und '), write_list(Rest).
 
 % wer ist der onkel von jeff
-s(F) --> ip(Gender1, no), vp(Relation, Gender1, _, no), pp(Person, _, _, no), [?],
+s(F) --> ip(Gender1, no), vp([Relation, Person], Gender1, _, no), [?],
          { F =.. [Relation, _, Person] }.
 % von wem ist corinna die schwester
 % von = praeposition
@@ -112,22 +112,23 @@ s(F) --> ip(Gender1, no), vp(Relation, Gender1, _, no), pp(Person, _, _, no), [?
 % corinna = eignename
 % die = artikel
 % schwester = nomen
-s(F) --> p, ip(Gender, da), vp(Person, Gender, Numerus, da), np(Relation, _, Numerus, _), [?],
+s(F) --> p, ip(Gender, da), vp([Person], Gender, Numerus, da), np([Relation], _, Numerus, _), [?],
          { F =.. [Relation, Person, _] }.
 % ist hannes der onkel von jeff
-s(F) --> v(Numerus), np(Person1, _, Numerus, Kausus), np(Relation, _, Numerus, Kausus),
-         pp(Person2, _, _, Kausus), [?], {F =.. [Relation, Person1, Person2]}.
+s(F) --> v(Numerus), np([Person1], _, Numerus, Kausus), np([Relation, Person2], _, Numerus, Kausus), [?],
+         { F =.. [Relation, Person1, Person2]}.
 ip(Gender, Kausus) --> [X], { lex(X, ip, Gender, Kausus) }.
 v(Numerus) --> [X], { lex(X, v, Numerus) }.
 vp(X, Gender, Numerus, Kausus) --> v(Numerus), np(X, Gender, Numerus, Kausus).
 %vp(_, _, Numerus, _) --> v(Numerus).
-np(X, Gender, sg, _) --> en(X, Gender).
-np(X, Gender, Numerus, Kausus) --> a(Gender, Numerus, Kausus), n(X, Gender, Numerus).
-%np(X, Gender, Numerus, Kausus) --> a(Gender, Numerus, Kausus),n(X, Gender, Numerus),pp(_, _, Numerus, Kausus).
+np([X], Gender, sg, _) --> en(X, Gender).
+np([X], Gender, Numerus, Kausus) --> a(Gender, Numerus, Kausus), n(X, Gender, Numerus).
+np([X|Y], Gender, Numerus, Kausus) --> a(Gender, Numerus, Kausus),n(X, Gender, Numerus),pp(Y, _, Numerus, Kausus).
 en(X, Gender) --> [X], { lex(X, en, Gender) }.
 n(Relation, Gender, Numerus) --> [X], { lex(X, Relation, n, Gender, Numerus) }.
 a(Gender, Numerus, Kausus) --> [X], { lex(X, a, Gender, Numerus, Kausus) }.
-pp(X, Gender, Numerus, Kausus) --> p, np(X, Gender, Numerus, Kausus).
+pp([X], Gender, _, _) --> p, en(X, Gender).
+pp([X], Gender, Numerus, Kausus) --> p, a(Gender, Numerus, Kausus),n(X, Gender, Numerus).
 p --> [X], { lex(X, pr) }.
 
 
