@@ -69,7 +69,27 @@ answer(X) :-
 	(lex(BEZIEHUNG, _, n, Gender, Numerus); !, write('die beziehung '), write(BEZIEHUNG), write(' wurde nicht gefunden.'), fail),
 	(lex(Artikel, a, Gender, Numerus, no); !, write('der artikel '), write(Artikel), write(' wurde nicht gefunden.'), fail),
 	(lex(Verb, v, Numerus); !, write('das verb '), write(Verb), write(' wurde nicht gefunden.'), fail),
+	%((atom(P1), BekanntePerson = P1, UnbekanntePerson = P2); (atom(P2), BekanntePerson = P2, UnbekanntePerson = P1)), !,
 	((
+		answer(X, Artikel, BEZIEHUNG, P1, P2, Verb)
+	); (
+		write('meine datenbank weiss nichts ueber die beziehung '),
+		write(BEZIEHUNG), write(' zwischen '),
+		write(P1), write(' und '),
+		write(P2), write('.'), nl
+	)), !.
+answer(X, Artikel, BEZIEHUNG, P1, P2, Verb) :-
+		atom(P1),
+		findall(P2, X, Y),
+		Y \= [],
+		write(P1), write(' '),
+		write(Verb), write(' '),
+		write(Artikel), write(' '),
+		write(BEZIEHUNG), write(' von '),
+		write_list(Y),
+		write('.'), nl.
+answer(X, Artikel, BEZIEHUNG, P1, P2, Verb) :-
+		atom(P2),
 		findall(P1, X, Y),
 		Y \= [],
 		write(Artikel), write(' '),
@@ -77,13 +97,7 @@ answer(X) :-
 		write(P2), write(' '),
 		write(Verb), write(' '),
 		write_list(Y),
-		write('.'), nl
-	); (
-		write('meine datenbank weiss nichts ueber die beziehung '),
-		write(BEZIEHUNG), write(' zwischen '),
-		write(P1), write(' und '),
-		write(P2), write('.'), nl
-	)).
+		write('.'), nl.
 
 write_list([Name]) :- write(Name).
 write_list([Name|Rest]) :- Rest \= [], write(Name), write(' und '), write_list(Rest).
@@ -99,7 +113,7 @@ s(F) --> ip(G1, K), vp(B, G1, _N1, K), pp(P, _G2, _N2, K), [?], { F =.. [B, _X, 
 % schwester = nomen
 s(F) --> p, ip(G, da), vp(P, G, N, da), np(B, _, N, _), [?], { F =.. [B, P, _X] }.
 % ist hannes der onkel von jeff
-s(F) --> v(N), np(P1, G, N, K), np(B, G2, N, K), pp(P2, _, _, K), [?], {F =.. [B, P1, P2]}.
+s(F) --> v(N), np(P1, _, N, K), np(B, _, N, K), pp(P2, _, _, K), [?], {F =.. [B, P1, P2]}.
 ip(G, K) --> [X], { lex(X, ip, G, K) }.
 v(N) --> [X], { lex(X, v, N) }.
 vp(X, G, N, K) --> v(N), np(X, G, N, K).
@@ -112,3 +126,6 @@ n(B, G, N) --> [X], { lex(X, B, n, G, N) }.
 a(G, N, K) --> [X], { lex(X, a, G, N, K) }.
 pp(X, G, N, K) --> p, np(X, G, N, K).
 p --> [X], { lex(X, pr) }.
+
+
+:- s, halt.
