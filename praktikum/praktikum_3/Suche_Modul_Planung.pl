@@ -8,7 +8,7 @@
 %   eval-path		;Bewertung eines Pfades
 
 
-start_description([
+/*start_description([
   block(block1),
   block(block2),
   block(block3),
@@ -21,9 +21,35 @@ start_description([
   clear(block3),
   clear(block4), %mit Block4
   handempty
-  ]).
+  ]).*/
+start_description([
+  block(block1),
+  block(block2),
+  block(block3),
+  block(block4),  %mit Block4
+  handempty,
+  on(table, block3),
+  on(table, block2),
+  on(block2, block1),
+  on(block1, block4),
+  clear(block3),
+  clear(block4)
+]).
 
 goal_description([
+  block(block1),
+  block(block2),
+  block(block3),
+  block(block4),  %mit Block4
+  handempty,
+  on(table, block3),
+  on(block3, block2),
+  on(block2, block1),
+  on(block1, block4),
+  clear(block4)
+]).
+
+/*goal_description([
   block(block1),
   block(block2),
   block(block3),
@@ -36,7 +62,7 @@ goal_description([
   clear(block3),
   clear(block2),
   handempty
-  ]).
+  ]).*/
 
 start_node((start,_,_)).
 
@@ -69,10 +95,12 @@ eval_path([(_,State,Value)]) :-
 
 eval_path([(_,State,Value)|RestPath]):-
   eval_path(RestPath),
-  %[(_, _, RestValue)|_] = RestPath,
-  length(RestPath, RestValue),
-  eval_state(State, RemValue),
-  Value is RemValue + RestValue.
+  length(RestPath, PreviousCost),
+  eval_state(State, EstimateRemaining),
+  % A* Suche ( Heuristik <= Restwert -> Zulaessige Heuristik)
+  %Value is EstimateRemaining + PreviousCost.
+  % Gierige Bestensuche:
+  Value = EstimateRemaining.
 
 action(pick_up(X),
        [handempty, clear(X), on(table,X)],
@@ -110,8 +138,7 @@ apply_action(State, [CondList, DeleteList, AddList], NewState) :-
 
 expand_help(State,Name,NewState):-
   action(Name, CondList, DeleteList, AddList),
-  apply_action(State, [CondList, DeleteList, AddList], NewState),
-  write(CondList), nl, write(AddList), nl, write(DeleteList),nl.
+  apply_action(State, [CondList, DeleteList, AddList], NewState).
 
 expand((_,State,_),Result):-
   findall((Name,NewState,_),expand_help(State,Name,NewState),Result).

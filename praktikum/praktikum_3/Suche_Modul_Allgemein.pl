@@ -104,3 +104,18 @@ insert_new_paths(informed,NewPaths,OldPaths,AllPaths):-
   insert_new_paths_informed(NewPaths,OldPaths,AllPaths),
   write_action(AllPaths),
   write_state(AllPaths).
+
+% optimistisches Bergsteigen
+insert_new_paths(optimistic, NewPaths, _OldPaths, AllPaths):-
+  eval_paths(NewPaths),
+  insert_new_paths_informed(NewPaths, [], AllPaths),
+  write_action(AllPaths),
+  write_state(AllPaths).
+
+% Bergsteigen mit backtracking
+insert_new_paths(climbing, NewPaths, OldPaths, AllPaths):-
+  eval_paths(NewPaths),
+  insert_new_paths_informed(NewPaths, [], Temp),
+  append(Temp, OldPaths, AllPaths),
+  write_action(AllPaths),
+  write_state(AllPaths).
