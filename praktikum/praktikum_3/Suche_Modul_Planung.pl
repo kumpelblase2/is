@@ -2,7 +2,7 @@
 %   start_description	;Beschreibung des Startzustands
 %   start_node          ;Test, ob es sich um einen Startknoten handelt
 %   goal_node           ;Test, ob es sich um einen Zielknoten handelt
-%   state_member        ;Test, ob eine Zustandsbeschreibung in einer Liste 
+%   state_member        ;Test, ob eine Zustandsbeschreibung in einer Liste
 %                        von Zustandsbeschreibungen enthalten ist
 %   expand              ;Berechnung der Kind-Zustandsbeschreibungen
 %   eval-path		;Bewertung eines Pfades
@@ -38,35 +38,33 @@ goal_description([
   handempty
   ]).
 
-
-
 start_node((start,_,_)).
 
 goal_node((_,State,_)):-
-  "Zielbedingungen einlesen"
-  "Zustand gegen Zielbedingungen testen".
+  goal_description(End),
+  mysubset(State, End),
+  mysubset(End, State), !.
 
-
-
-% Aufgrund der Komplexität der Zustandsbeschreibungen kann state_member nicht auf 
-% das Standardprädikat member zurückgeführt werden.
-%  
+% Aufgrund der Komplexitï¿½t der Zustandsbeschreibungen kann state_member nicht auf
+% das Standardprï¿½dikat member zurï¿½ckgefï¿½hrt werden.
+%
 state_member(_,[]):- !,fail.
 
 state_member(State,[FirstState|_]):-
-  "Test, ob State bereits durch FirstState beschrieben war. Tipp: Eine 
-  Lösungsmöglichkeit besteht in der Verwendung einer Mengenoperation, z.B. subtract"  ,!.  
+  mysubset(FirstState, State),
+  mysubset(State, FirstState), !.
 
 %Es ist sichergestellt, dass die beiden ersten Klauseln nicht zutreffen.
-state_member(State,[_|RestStates]):-  
-  "rekursiver Aufruf".
+state_member(State,[_|RestStates]):-
+  %"rekursiver Aufruf".
+  state_member(State, RestStates).
 
 
-eval_path([(_,State,Value)|RestPath]):-
-  eval_state(State,"Rest des Literals bzw. der Klausel"
-  "Value berechnen".
+eval_path([(_,State,Value)|RestPath]):- fail.
+  %eval_state(State,"Rest des Literals bzw. der Klausel"
+  %"Value berechnen".
 
-  
+
 
 action(pick_up(X),
        [handempty, clear(X), on(table,X)],
@@ -89,46 +87,23 @@ action(put_on(Y,X),
        [handempty, clear(X), on(Y,X)]).
 
 
-% Hilfskonstrukt, weil das PROLOG "subset" nicht die Unifikation von Listenelementen 
-% durchführt, wenn Variablen enthalten sind. "member" unifiziert hingegen.
+% Hilfskonstrukt, weil das PROLOG "subset" nicht die Unifikation von Listenelementen
+% durchfï¿½hrt, wenn Variablen enthalten sind. "member" unifiziert hingegen.
 %
 mysubset([],_).
 mysubset([H|T],List):-
   member(H,List),
   mysubset(T,List).
 
+apply_action(State, [CondList, DeleteList, AddList], NewState) :-
+    mysubset(CondList, State),
+    subtract(State, DeleteList, TempState),
+    append(TempState, AddList, NewState).
 
 expand_help(State,Name,NewState):-
-  "Action suchen"
-  "Conditions testen"
-  "Del-List umsetzen"
-  "Add-List umsetzen".
-  
+  action(Name, CondList, DeleteList, AddList),
+  apply_action(State, [CondList, DeleteList, AddList], NewState),
+  write(CondList), nl, write(AddList), nl, write(DeleteList),nl.
+
 expand((_,State,_),Result):-
   findall((Name,NewState,_),expand_help(State,Name,NewState),Result).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
