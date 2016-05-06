@@ -59,12 +59,20 @@ state_member(State,[_|RestStates]):-
   %"rekursiver Aufruf".
   state_member(State, RestStates).
 
+eval_state(State, Value) :-
+  goal_description(Goal),
+  subtract(Goal, State, Remaining),
+  length(Remaining, Value).
 
-eval_path([(_,State,Value)|RestPath]):- fail.
-  %eval_state(State,"Rest des Literals bzw. der Klausel"
-  %"Value berechnen".
+eval_path([(_,State,Value)]) :- 
+  eval_state(State, Value).
 
-
+eval_path([(_,State,Value)|RestPath]):-
+  eval_path(RestPath),
+  %[(_, _, RestValue)|_] = RestPath,
+  length(RestPath, RestValue),
+  eval_state(State, RemValue),
+  Value is RemValue + RestValue.
 
 action(pick_up(X),
        [handempty, clear(X), on(table,X)],
