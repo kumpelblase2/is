@@ -53,7 +53,7 @@ start_description([
   block(block14),
   on(table, block1),
   on(table, block4),
-  on(table, block5),
+  on(table, block6),
   on(table, block10),
   on(table, block11),
   on(table, block12),
