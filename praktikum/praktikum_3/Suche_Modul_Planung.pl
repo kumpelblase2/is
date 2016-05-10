@@ -35,6 +35,45 @@ start_description([
   clear(block3),
   clear(block4)
 ]).
+/*
+start_description([
+  block(block1),
+  block(block2),
+  block(block3),
+  block(block4),
+  block(block5),
+  block(block6),
+  block(block7),
+  block(block8),
+  block(block9),
+  block(block10),
+  block(block11),
+  block(block12),
+  block(block13),
+  block(block14),
+  on(table, block1),
+  on(table, block4),
+  on(table, block5),
+  on(table, block10),
+  on(table, block11),
+  on(table, block12),
+  handempty,
+  clear(block3),
+  clear(block5),
+  clear(block9),
+  clear(block10),
+  clear(block11),
+  clear(block14),
+  on(block1, block2),
+  on(block2, block3),
+  on(block4, block5),
+  on(block6, block7),
+  on(block7, block8),
+  on(block8, block9),
+  on(block12, block13),
+  on(block13, block14)
+]).
+*/
 
 goal_description([
   block(block1),
@@ -63,6 +102,43 @@ goal_description([
   clear(block2),
   handempty
   ]).*/
+  
+/*
+goal_description([
+  block(block1),
+  block(block2),
+  block(block3),
+  block(block4),
+  block(block5),
+  block(block6),
+  block(block7),
+  block(block8),
+  block(block9),
+  block(block10),
+  block(block11),
+  block(block12),
+  block(block13),
+  block(block14),
+  on(table, block11),
+  on(table, block10),
+  on(table, block5),
+  handempty,
+  clear(block12),
+  clear(block14),
+  clear(block1),
+  on(block11, block6),
+  on(block6, block7),
+  on(block7, block8),
+  on(block8, block9),
+  on(block9, block12),
+  on(block10, block13),
+  on(block13, block14),
+  on(block5, block4),
+  on(block4, block3),
+  on(block3, block2),
+  on(block2, block1)
+]).
+*/
 
 start_node((start,_,_)).
 
