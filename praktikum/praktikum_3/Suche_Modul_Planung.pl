@@ -7,7 +7,7 @@
 %   expand              ;Berechnung der Kind-Zustandsbeschreibungen
 %   eval-path		;Bewertung eines Pfades
 
-
+% Original
 /*start_description([
   block(block1),
   block(block2),
@@ -22,7 +22,9 @@
   clear(block4), %mit Block4
   handempty
   ]).*/
-start_description([
+
+% Fehlschlagen
+/*start_description([
   block(block1),
   block(block2),
   block(block3),
@@ -34,9 +36,10 @@ start_description([
   on(block1, block4),
   clear(block3),
   clear(block4)
-]).
-/*
-start_description([
+]).*/
+
+% Kompliziert
+/*start_description([
   block(block1),
   block(block2),
   block(block3),
@@ -72,10 +75,34 @@ start_description([
   on(block8, block9),
   on(block12, block13),
   on(block13, block14)
-]).
-*/
+]).*/
 
-goal_description([
+% Kompliziert Simple
+start_description([
+  block(block1),
+  block(block2),
+  block(block3),
+  block(block4),
+  block(block5),
+  block(block12),
+  block(block13),
+  block(block14),
+  on(table, block1),
+  on(table, block4),
+  on(table, block12),
+  handempty,
+  clear(block3),
+  clear(block5),
+  clear(block14),
+  on(block1, block2),
+  on(block2, block3),
+  on(block4, block5),
+  on(block12, block13),
+  on(block13, block14)
+]).
+
+% Fehlschlag
+/*goal_description([
   block(block1),
   block(block2),
   block(block3),
@@ -86,8 +113,9 @@ goal_description([
   on(block2, block1),
   on(block1, block4),
   clear(block4)
-]).
+]).*/
 
+% Original
 /*goal_description([
   block(block1),
   block(block2),
@@ -103,8 +131,8 @@ goal_description([
   handempty
   ]).*/
   
-/*
-goal_description([
+% Kompliziert
+/*goal_description([
   block(block1),
   block(block2),
   block(block3),
@@ -137,14 +165,37 @@ goal_description([
   on(block4, block3),
   on(block3, block2),
   on(block2, block1)
+]).*/
+
+% Kompliziert Simple
+goal_description([
+  block(block1),
+  block(block2),
+  block(block3),
+  block(block4),
+  block(block5),
+  block(block12),
+  block(block13),
+  block(block14),
+  on(table, block12),
+  on(table, block13),
+  on(table, block5),
+  handempty,
+  clear(block12),
+  clear(block14),
+  clear(block1),
+  on(block13, block14),
+  on(block5, block4),
+  on(block4, block3),
+  on(block3, block2),
+  on(block2, block1)
 ]).
-*/
 
 start_node((start,_,_)).
 
 goal_node((_,State,_)):-
   goal_description(End),
-  mysubset(State, End),
+  %mysubset(State, End),
   mysubset(End, State), !.
 
 % Aufgrund der Komplexit�t der Zustandsbeschreibungen kann state_member nicht auf
@@ -153,7 +204,7 @@ goal_node((_,State,_)):-
 state_member(_,[]):- !,fail.
 
 state_member(State,[FirstState|_]):-
-  mysubset(FirstState, State),
+  %mysubset(FirstState, State),
   mysubset(State, FirstState), !.
 
 %Es ist sichergestellt, dass die beiden ersten Klauseln nicht zutreffen.
@@ -161,20 +212,35 @@ state_member(State,[_|RestStates]):-
   %"rekursiver Aufruf".
   state_member(State, RestStates).
 
-eval_state(State, Value) :-
-  goal_description(Goal),
-  subtract(Goal, State, Remaining),
+state_hand_empty(State, 0) :- member(State, handempty).
+state_hand_empty(State, -1) :- not(member(State, handempty)).
+
+state_on(State, Goal, Value) :-
+  findall(on(X,Y), member(on(X, Y), Goal), AllOn),
+  subtract(AllOn, State, Remaining),
   length(Remaining, Value).
 
-eval_path([(_,State,Value)]) :- 
+eval_state(State, Value) :-
+  goal_description(Goal),
+  state_on(State, Goal, OnValue),
+  state_hand_empty(State, HandValue),
+  Value is OnValue + HandValue.
+
+eval_path([(_,State,Value)], _) :- 
   eval_state(State, Value).
 
-eval_path([(_,State,Value)|RestPath]):-
-  eval_path(RestPath),
+eval_path([(_,State,Value)|RestPath], star):-
+  eval_path(RestPath, star),
   length(RestPath, PreviousCost),
   eval_state(State, EstimateRemaining),
   % A* Suche ( Heuristik <= Restwert -> Zulaessige Heuristik)
-  %Value is EstimateRemaining + PreviousCost.
+  Value is EstimateRemaining + PreviousCost.
+  % Gierige Bestensuche:
+  %Value = EstimateRemaining.
+
+eval_path([(_,State,Value)|RestPath], simple):-
+  eval_path(RestPath, simple),
+  eval_state(State, EstimateRemaining),
   % Gierige Bestensuche:
   Value = EstimateRemaining.
 

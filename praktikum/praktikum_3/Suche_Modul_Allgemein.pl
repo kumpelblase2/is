@@ -100,21 +100,31 @@ insert_new_paths(breadth,NewPaths,OldPaths,AllPaths):-
 
 % Informierte Suche
 insert_new_paths(informed,NewPaths,OldPaths,AllPaths):-
-  eval_paths(NewPaths),
+  eval_paths(NewPaths, star),
   insert_new_paths_informed(NewPaths,OldPaths,AllPaths),
   write_action(AllPaths),
   write_state(AllPaths).
 
 % optimistisches Bergsteigen
-insert_new_paths(optimistic, NewPaths, _OldPaths, AllPaths):-
-  eval_paths(NewPaths),
-  insert_new_paths_informed(NewPaths, [], AllPaths),
+insert_new_paths(optimistic, NewPaths, [], AllPaths):-
+  eval_paths(NewPaths, simple),
+  insert_new_paths_informed(NewPaths, [], [BestPath | _]),
+  AllPaths = [BestPath],
+  write_action(AllPaths),
+  write_state(AllPaths).
+
+insert_new_paths(optimistic, NewPaths, [(_, _, LastValue) |_], AllPaths):-
+  eval_paths(NewPaths, simple),
+  insert_new_paths_informed(NewPaths, [], [BestPath | _]),
+  (_, _, Value) = BestPath,
+  LastValue > Value,
+  AllPaths = [BestPath],
   write_action(AllPaths),
   write_state(AllPaths).
 
 % Bergsteigen mit backtracking
 insert_new_paths(climbing, NewPaths, OldPaths, AllPaths):-
-  eval_paths(NewPaths),
+  eval_paths(NewPaths, simple),
   insert_new_paths_informed(NewPaths, [], Temp),
   append(Temp, OldPaths, AllPaths),
   write_action(AllPaths),
