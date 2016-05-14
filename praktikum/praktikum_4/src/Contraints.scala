@@ -60,17 +60,3 @@ object Fish extends Pet(25)
 object Pet extends VariableCollection[Pet] {
   val values = List(Dog, Bird, Horse, Cat, Fish)
 }
-
-/*abstract sealed class House(number: Int) extends Ordered[House] {
-  override def compare(that: House): Int = number compare that.number
-}
-
-object FirstHouse extends House(1)
-object SecondHouse extends House(2)
-object ThirdHouse extends House(3)
-object FourthHouse extends House(4)
-object FifthHouse extends House(5)
-
-object House {
-  val values = List(FirstHouse, SecondHouse, ThirdHouse, FirstHouse, FirstHouse)
-}*/
