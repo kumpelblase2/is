@@ -1,4 +1,4 @@
-class CSP[Var, Opt] {
+class CSP[Var, Opt <% Comparable[Opt]]() {
   type Constraint = (Opt, Set[Opt]) => Boolean
   var variables: List[Var] = List() // All variables that we have
   var domain: Map[Var, Set[Opt]] = Map.empty // All possible values for the variables
@@ -158,5 +158,55 @@ class CSP[Var, Opt] {
       val (variable, value) = entry
       s"$variable = ${value.head}"
     }.reduce(_ + "\n" + _)
+  }
+
+  implicit def toConstraintMaker(variable1: Var) : ConstraintMaker[Opt] = {
+    new ConstraintMaker[Opt](this, variable1)
+  }
+
+  implicit def toCollectionConstraintMaker(variable1: Traversable[Var]) : CollectionConstraintMaker[Opt] = {
+    new CollectionConstraintMaker[Opt](this, variable1)
+  }
+
+  class ConstraintMaker[T](val csp: CSP[Var, T], val var1: Var)(implicit ev$1: T => Comparable[T]) {
+    val same = (var1: T, var2: Set[T]) => var2.contains(var1)
+    val notSame = (var1: T, var2: Set[T]) => var2.exists(_ != var1)
+    val leftTo = (var1: T, var2: Set[T]) => var2.exists(var1.compareTo(_) < 0)
+    val rightTo = (var1: T, var2: Set[T]) => var2.exists(var1.compareTo(_) > 0)
+
+    def sameAs(var2: Var): Unit = {
+      csp.addBiConstraint(var1, var2, same)
+    }
+
+    def notSameAs(var2: Var): Unit = {
+      csp.addBiConstraint(var1, var2, notSame)
+    }
+
+    def leftTo(var2: Var): Unit = {
+      csp.addConstraint(var1, var2, leftTo)
+      csp.addConstraint(var2, var1, rightTo)
+    }
+
+    def rightTo(var2: Var): Unit = {
+      csp.addConstraint(var1, var2, rightTo)
+      csp.addConstraint(var2, var1, leftTo)
+    }
+
+    def equalTo(value: T): Unit = {
+      csp.addConstraint(var1, var1, (var1, var2) => var1 == value)
+    }
+  }
+
+  class CollectionConstraintMaker[T](val csp: CSP[Var, T], val var1: Traversable[Var])(implicit ev$1: T => Comparable[T]) {
+    val same = (var1: T, var2: Set[T]) => var2.contains(var1)
+    val notSame = (var1: T, var2: Set[T]) => var2.exists(_ != var1)
+
+    def allSame(): Unit = {
+      csp.addBiConstraint(var1, same)
+    }
+
+    def allDifferent(): Unit = {
+      csp.addBiConstraint(var1, notSame)
+    }
   }
 }

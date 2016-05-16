@@ -4,43 +4,82 @@ object Main {
 
   def main(args: Array[String]) {
     val csp = new CSP[Variable, Int]
+    import csp._ // Import things to make implicits work
+
     allVars.foreach { variable =>
       csp.addVar(variable, Set(1, 2, 3, 4, 5)) // Init all vars with all possible values
     }
 
-    val same = (var1: Int, var2: Set[Int]) => var2.contains(var1)
-    val notSame = (var1: Int, var2: Set[Int]) => var2.exists(_ != var1)
-    val leftTo = (var1: Int, var2: Set[Int]) => var2.exists(var1 < _)
-    val rightTo = (var1: Int, var2: Set[Int]) => var2.exists(var1 > _)
     val nextTo = (var1: Int, var2: Set[Int]) => var2.exists(within(1)(var1, _))
 
-    csp.addConstraint(Milk, Milk, (var1, var2) => var1 == 3) // We know milk is in the third house
-    csp.addConstraint(Norwegian, Norwegian, (var1, var2) => var1 == 1) // we know the norwegian lives in the first house
-
+    Milk equalTo 3 // We know milk is in the third house
+    Norwegian equalTo 1 // we know the norwegian lives in the first house
     // Other clues
-    csp.addBiConstraint(Brit, Red, same)
-    csp.addBiConstraint(Swede, Dog, same)
-    csp.addBiConstraint(Dane, Tee, same)
-    csp.addConstraint(Green, White, leftTo)
-    csp.addConstraint(White, Green, rightTo)
-    csp.addBiConstraint(Green, Coffee, same)
-    csp.addBiConstraint(PallMall, Bird, same)
-    csp.addBiConstraint(Yellow, Dunhill, same)
-    csp.addBiConstraint(Winfield, Beer, same)
-    csp.addBiConstraint(German, Rothmanns, same)
+    Brit sameAs Red
+    Swede sameAs Dog
+    Dane sameAs Tee
+    Green leftTo White
+    Green sameAs Coffee
+    PallMall sameAs Bird
+    Yellow sameAs Dunhill
+    Winfield sameAs Beer
+    German sameAs Rothmanns
+    // Can't really do these with the nice syntax
     csp.addBiConstraint(Malboro, Cat, nextTo)
     csp.addBiConstraint(Horse, Dunhill, nextTo)
     csp.addBiConstraint(Norwegian, Blue, nextTo)
     csp.addBiConstraint(Malboro, Water, nextTo)
 
-    csp.addBiConstraint(Color.values, notSame)
-    csp.addBiConstraint(Pet.values, notSame)
-    csp.addBiConstraint(Drink.values, notSame)
-    csp.addBiConstraint(Cigarette.values, notSame)
-    csp.addBiConstraint(Person.values, notSame)
+    Color.values allDifferent()
+    Pet.values allDifferent()
+    Drink.values allDifferent()
+    Cigarette.values allDifferent()
+    Person.values allDifferent()
 
     println(csp.solve()) // GET ON WITH IT
-    println(csp.solution)
+    println(Tabulator.format(createTable(csp))) // pretty print
+  }
+
+  def createTable(csp: CSP[Variable, Int]): List[List[String]] = { // Create tables for solution
+    var table : List[List[String]] = List(List("Houses", "House 1", "House 2", "House 3", "House 4", "House 5"))
+    List(Person, Color, Pet, Drink, Cigarette).foreach { kind =>
+      val values = kind.values
+      var row: List[String] = List(kind.name)
+      for(index <- 1 to 5) {
+        val entry = csp.domain.filter { case (key, value) => values.contains(key) }.find { case (key, value) => value.contains(index) }
+        entry.map { case (key, _) => key }.foreach { variable =>
+          row = row :+ variable.name
+        }
+      }
+
+      table = table :+ row
+    }
+    table
   }
 }
 
+object Tabulator { // Helper object to make formatting easier
+  def format(table: Seq[Seq[Any]]) = table match {
+    case Seq() => ""
+    case _ =>
+      val sizes = for (row <- table) yield (for (cell <- row) yield if (cell == null) 0 else cell.toString.length)
+      val colSizes = for (col <- sizes.transpose) yield col.max
+      val rows = for (row <- table) yield formatRow(row, colSizes)
+      formatRows(rowSeparator(colSizes), rows)
+  }
+
+  def formatRows(rowSeparator: String, rows: Seq[String]): String = (
+    rowSeparator ::
+      rows.head ::
+      rowSeparator ::
+      rows.tail.toList :::
+      rowSeparator ::
+      List()).mkString("\n")
+
+  def formatRow(row: Seq[Any], colSizes: Seq[Int]) = {
+    val cells = (for ((item, size) <- row.zip(colSizes)) yield if (size == 0) "" else ("%" + size + "s").format(item))
+    cells.mkString("|", "|", "|")
+  }
+
+  def rowSeparator(colSizes: Seq[Int]) = colSizes map { "-" * _ } mkString("+", "+", "+")
+}

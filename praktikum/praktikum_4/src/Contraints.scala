@@ -1,9 +1,15 @@
 sealed trait Variable {
   val index: Int
+  def name : String = {
+    toString.split("\\$")(0)
+  }
 }
 
 trait VariableCollection[T] {
   def values : List[T]
+  def name : String = {
+    toString.split("\\$")(0)
+  }
 }
 
 abstract class Person(val index: Int) extends Variable
