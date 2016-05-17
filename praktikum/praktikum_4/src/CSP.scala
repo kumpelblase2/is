@@ -1,7 +1,10 @@
+import scala.annotation.tailrec
+
 class CSP[Var, Opt <% Comparable[Opt]]() {
+  type Domain = Map[Var, Set[Opt]]
   type Constraint = (Opt, Set[Opt]) => Boolean
   var variables: List[Var] = List() // All variables that we have
-  var domain: Map[Var, Set[Opt]] = Map.empty // All possible values for the variables
+  var domain: Domain = Map.empty // All possible values for the variables
   var constraints: List[(Var, Var, Constraint)] = List() // All constraints / edges
 
   /**
@@ -59,45 +62,54 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
     * @param edge The edge to check
     * @return     true of false depending if updates were made
     */
-  def revise(edge: (Var, Var, Constraint)) = {
+  def revise(currentDomain: Domain, edge: (Var, Var, Constraint)) = {
     val (source, target, constraint) = edge
-    val sourceValues = domain(source)
-    val targetValues = domain(target)
+    val sourceValues = currentDomain(source)
+    val targetValues = currentDomain(target)
     val newDomainValues = sourceValues.filter { value => // Filter out invalid values
       constraint(value, targetValues)
     }
 
-    domain = domain.updated(source, newDomainValues) // Update domain with new values
-    newDomainValues.size != sourceValues.size
+    (newDomainValues.size != sourceValues.size, currentDomain + (source -> newDomainValues)) // Update domain with new values
   }
 
-  private def ac3(): Unit = {
-    var q = constraints.filter(_ => true) // Just create a copy
+  private def ac3(initDomain: Domain): Domain = {
+    var currentDomain = initDomain
+    var q = constraints
     while(q.nonEmpty) {
-      val current = q.head
+      val current = q.head // Pop first element, could be any but this is the most general way
       q = q.tail
-      if(revise(current)) {
-        q = (q ++ constraints.filter { edge => // Get all constraints that don't have the same target node
-          indexOfVariable(current._2) != indexOfVariable(edge._1)
-        }).distinct
+      revise(currentDomain, current) match {
+        case (true, newDomain) => // If updates were made
+          currentDomain = newDomain
+          q = (q ++ constraints.filter { edge => // Get all constraints that don't have the same target node
+            indexOfVariable(current._2) != indexOfVariable(edge._1)
+          }).distinct
+        case (false, _) => // Do nothing if nothing has changed
       }
     }
+
+    currentDomain // Return updated domain
   }
 
-  private def ac3LA(cv: Int = 0) = {
-    var q = init(cv)
+  private def ac3LA(initDomain: Domain, cv: Int = 0) = {
+    var currentDomain = initDomain
+    var q = init(cv) // Create initial queue
     var consistent = true
-    while (q.nonEmpty && consistent) {
-      val current = q.head
+    while (q.nonEmpty && consistent) { // Do it as long as we are consistent and have things to check
+      val current = q.head  // Pop first element, could be any but this is the most general way
       q = q.tail
-      if (revise(current)) {
-        q = following(indexOfVariable(current._1), cv) // Get all the constraints that follow after this variable
-        val k = current._1
-        consistent = domain(k).nonEmpty
+      revise(currentDomain, current) match { // Check for updates
+        case (true, newDomain) => // if updates were made
+          val (currentVariable, _) = current
+          currentDomain = newDomain
+          q = following(indexOfVariable(currentVariable), cv) // Get all the constraints that follow after this variable
+          consistent = currentDomain(currentVariable).nonEmpty
+        case _ => // Nothing to do if nothing was changed
       }
     }
 
-    consistent
+    (consistent, currentDomain)
   }
 
   private def init(cv: Int) = {
@@ -107,41 +119,56 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
   }
 
   private def following(current: Int, cv: Int) = {
-    constraints.filter { edge =>
+    constraints.filter { edge => // Get all variables that are after current index and don't have the current as target
       val (source, target, _) = edge
       indexOfVariable(target) != current && indexOfVariable(source) > cv
     }
   }
 
-  private def solveRecursive(cv: Int): Boolean = {
+  private def solveRecursive(initDomain: Domain, cv: Int, allSolutions: Boolean = false): (Boolean, Seq[Domain]) = {
     val variable = variables(cv)
-    val currDomain = domain(variable)
-    if(currDomain.isEmpty) // If we don't have any possibilities, we're done
-      return false
+    val currDomain = initDomain(variable)
+    if(currDomain.isEmpty) // If we don't have any possibilities, we're done and we don't have any solution
+      return (false, List())
 
-    val oldDomain = domain
-    domain = domain.updated(variable, Set(currDomain.head)) // Just try one value
-    if(ac3LA(cv)) { // Check if the graph stays consistent with this
-      if(cv == variables.size - 1) // if we reached the last variable too, we're finished and it's solved
-        return true
+    ac3LA(initDomain + (variable -> Set(currDomain.head)), cv) match { // Check if the graph stays consistent with this
+      case (true, newDomain) => // If it does
+        if(cv == variables.size - 1) { // if we reached the last variable too, we're finished and it's solved
+          if(allSolutions) { // if we should check the other possibilities
+            val (_, successfulList) = solveRecursive(initDomain + (variable -> currDomain.tail), cv, allSolutions) // Get the other possibilities for the last variable
+            return (true, List(newDomain) ++ successfulList)
+          } else {
+            return (true, List(newDomain)) // Just return the current domain as a solution since we are at the bottom
+          }
+        }
 
-      if(solveRecursive(cv + 1)) // Recursive call for next variable
-        return true
+        solveRecursive(newDomain, cv + 1, allSolutions) match { // Check if also all next variables stay consistent
+          case (true, recursiveDomain) => // if that's true, we have a solution so we can escalate back up
+            if(allSolutions) { // if we should check all solutions, generate all solutions for the other variables before returning up
+              val (_, successfulList) = solveRecursive(initDomain + (variable -> currDomain.tail), cv, allSolutions)
+              (true, recursiveDomain ++ successfulList)
+            } else { // if we only need one, just return the result we got
+              (true, recursiveDomain)
+            }
+          case _ => // if the remaining domain cannot be made consistent, go back up
+            solveRecursive(initDomain + (variable -> currDomain.tail), cv, allSolutions) // try again with another variable
+        }
+      case _ => // If it cannot be made consistent, we can remove the current one as a possibility
+        solveRecursive(initDomain + (variable -> currDomain.tail), cv, allSolutions) // try again with another variable
     }
 
-    domain = oldDomain // Restore old domain
-    domain = domain.updated(variable, currDomain.tail) // Since the chose value didn't work, remove it
-    solveRecursive(cv) // try again with another variable
+
   }
 
   /**
     * Try to solve things.
     *
-    * @return true or false depending if it succeeded or not
+    * @param solveAll If all possible solutions should be returned
+    * @return A tuple containing the success of finding a solution and all (or the first) solutions
     */
-  def solve(): Boolean = {
-    ac3() // Run once to make sure everything is consistent and all constraints are met
-    solveRecursive(0) // Start recursion with trying out values
+  def solve(solveAll: Boolean = false): (Boolean, Seq[Domain]) = {
+    val consistentDomain = ac3(domain) // Run once to make sure everything is consistent and all constraints are met
+    solveRecursive(consistentDomain, 0, solveAll) // Start recursion with trying out values
   }
 
   private def indexOfVariable(variable: Var) = {

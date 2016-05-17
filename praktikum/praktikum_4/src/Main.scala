@@ -36,17 +36,22 @@ object Main {
     Cigarette.values allDifferent()
     Person.values allDifferent()
 
-    println(csp.solve()) // GET ON WITH IT
-    println(Tabulator.format(createTable(csp))) // pretty print
+    val (_, solutions) = csp.solve(true) // GET ON WITH IT
+    solutions.map(createTable)
+      .map(Tabulator.format)
+      .foreach { table =>
+        println(table)
+        println()
+      }
   }
 
-  def createTable(csp: CSP[Variable, Int]): List[List[String]] = { // Create tables for solution
+  def createTable(domain: Map[Variable, Set[Int]]): List[List[String]] = { // Create tables for solution
     var table : List[List[String]] = List(List("Houses", "House 1", "House 2", "House 3", "House 4", "House 5"))
     List(Person, Color, Pet, Drink, Cigarette).foreach { kind =>
       val values = kind.values
       var row: List[String] = List(kind.name)
       for(index <- 1 to 5) {
-        val entry = csp.domain.filter { case (key, value) => values.contains(key) }.find { case (key, value) => value.contains(index) }
+        val entry = domain.filter { case (key, value) => values.contains(key) }.find { case (key, value) => value.contains(index) }
         entry.map { case (key, _) => key }.foreach { variable =>
           row = row :+ variable.name
         }
