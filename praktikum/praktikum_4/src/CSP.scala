@@ -101,7 +101,7 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
       q = q.tail
       revise(currentDomain, current) match { // Check for updates
         case (true, newDomain) => // if updates were made
-          val (currentVariable, _) = current
+          val (currentVariable, _, _) = current
           currentDomain = newDomain
           q = following(indexOfVariable(currentVariable), cv) // Get all the constraints that follow after this variable
           consistent = currentDomain(currentVariable).nonEmpty
