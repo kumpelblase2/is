@@ -36,12 +36,14 @@ object Main {
     Cigarette.values allDifferent()
     Person.values allDifferent()
 
-    val (_, solutions) = csp.solve(true) // GET ON WITH IT
+    val startTime = System.currentTimeMillis()
+    val (success, solutions) = csp.solve(true) // GET ON WITH IT
+    val timeDiff = System.currentTimeMillis() - startTime
+    println(s"Was $success, took $timeDiff ms")
     solutions.map(createTable)
       .map(Tabulator.format)
       .foreach { table =>
-        println(table)
-        println()
+        println(table + "\n")
       }
   }
 

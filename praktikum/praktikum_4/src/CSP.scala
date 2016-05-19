@@ -1,5 +1,3 @@
-import scala.annotation.tailrec
-
 class CSP[Var, Opt <% Comparable[Opt]]() {
   type Domain = Map[Var, Set[Opt]]
   type Constraint = (Opt, Set[Opt]) => Boolean
@@ -156,8 +154,6 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
       case _ => // If it cannot be made consistent, we can remove the current one as a possibility
         solveRecursive(initDomain + (variable -> currDomain.tail), cv, allSolutions) // try again with another variable
     }
-
-
   }
 
   /**
@@ -171,6 +167,12 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
     solveRecursive(consistentDomain, 0, solveAll) // Start recursion with trying out values
   }
 
+  /**
+    * Returns the index of the variable in the graph
+    *
+    * @param variable The variable to get the index for
+    * @return         The index
+    */
   private def indexOfVariable(variable: Var) = {
     variables.indexOf(variable)
   }
@@ -180,7 +182,7 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
     *
     * @return Solution string
     */
-  def solution: String = {
+  def domainString: String = {
     domain.map { entry =>
       val (variable, value) = entry
       s"$variable = ${value.head}"
@@ -195,7 +197,7 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
     new CollectionConstraintMaker[Opt](this, variable1)
   }
 
-  class ConstraintMaker[T](val csp: CSP[Var, T], val var1: Var)(implicit ev$1: T => Comparable[T]) {
+  class ConstraintMaker[T](val csp: CSP[Var, T], val var1: Var)(implicit ev: T => Comparable[T]) { // Need the implicit to make sure that T can be compared
     val same = (var1: T, var2: Set[T]) => var2.contains(var1)
     val notSame = (var1: T, var2: Set[T]) => var2.exists(_ != var1)
     val leftTo = (var1: T, var2: Set[T]) => var2.exists(var1.compareTo(_) < 0)
@@ -224,7 +226,7 @@ class CSP[Var, Opt <% Comparable[Opt]]() {
     }
   }
 
-  class CollectionConstraintMaker[T](val csp: CSP[Var, T], val var1: Traversable[Var])(implicit ev$1: T => Comparable[T]) {
+  class CollectionConstraintMaker[T](val csp: CSP[Var, T], val var1: Traversable[Var]) {
     val same = (var1: T, var2: Set[T]) => var2.contains(var1)
     val notSame = (var1: T, var2: Set[T]) => var2.exists(_ != var1)
 
